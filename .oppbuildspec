@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<buildspec version="4.0">
+	<dir path="." type="makemake">
+		<makemakeoptions name="." args="-f --deep --no-deep-includes"/>
+	</dir>
+</buildspec>
