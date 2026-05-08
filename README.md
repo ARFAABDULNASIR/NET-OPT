@@ -114,9 +114,30 @@ In the run dialog, change the **Configuration name** dropdown.
 
 ### In Qtenv (graphical window):
 
-1. **Red bubbles on APs** = `BOTTLENECK!` — AP is saturated
-2. **Green bubbles on students** = `Registered!` — successful registration
-3. **Red bubbles on students** = `FAILED!` — student couldn't register
+1. **AP bubbles** = `BOTTLENECK!` / `RECOVERED!` — AP saturation and recovery states
+2. **Student bubbles** = `Connecting!`, `Registered!`, `Retrying`, or `FAILED!` — registration progress
+3. The exact bubble color is controlled by OMNeT++/Qtenv, but the status text is shown directly on the module
+
+### Monitor Output (Final Report):
+
+At simulation end, the **BottleneckMonitor** module prints a detailed report:
+
+```
+=================================================
+  NET-OPT ADVANCED SIMULATION COMPLETE
+  Total Samples     : 600
+  Bottleneck Events : 1
+  Admin Bottlenecks : 31 samples (35s)
+  CS Bottlenecks    : 46 samples (50s)
+  Lib Bottlenecks   : 0 samples (0s)
+  Peak Load At      : 60s
+=================================================
+```
+
+**What each metric means:**
+- **Total Samples**: Monitoring intervals (1 per second)
+- **Bottleneck Events**: Transition count (health dropped below 50%)
+- **XXX Bottlenecks**: Number of samples where building was congested + total duration
 
 ### Key Statistics to show Professor:
 
@@ -129,17 +150,19 @@ cd results/
 **What to record and show:**
 - `apLoad` → Wi-Fi load per AP over time (should spike at t=60-90s)
 - `clientCount` → How many students per AP
-- `isBottleneck` → 0/1 flag, shows when bottleneck occurs
+- `adminBottleneckSamples`, `csBottleneckSamples`, `libBottleneckSamples` → congestion sample count per building
 - `networkHealth` → Global metric (drops from 95% to 25% at peak)
 - `activeSessions` → Server sessions
 - `responseTime` → Registration response time in ms
+- `totalAttempts` → Per-student retry count (should be 1-2 in RegistrationPeak, 3-4 in StressTest)
 
 ---
 
 ## 🔍 Key Results to Explain to Professor
 
-### Registration Peak Scenario:
+### RegistrationPeak Scenario (Main Demo):
 
+**Timeline:**
 ```
 t=0-30s    → Students start arriving, network healthy (95%)
 t=30-60s   → Registration opens, load rising (60%)
@@ -148,16 +171,63 @@ t=90-120s  → Demand slightly reduces, partial recovery (40%)
 t=120-300s → Post-peak, network stabilizes (80%)
 ```
 
-### Root Causes Identified:
-1. **CS Block AP saturation** — 80 students, only 5 APs (16 students/AP average)
-2. **Registration Server queue overflow** — 200-session limit exceeded
-3. **Distribution switch (distSwitch[1])** — 1Gbps uplink is the bottleneck
+**Expected Monitor Output:**
+```
+=================================================
+  NET-OPT ADVANCED SIMULATION COMPLETE
+  Total Samples     : 600
+  Bottleneck Events : 1
+  Admin Bottlenecks : 31 samples (35s)
+  CS Bottlenecks    : 46 samples (50s)
+  Lib Bottlenecks   : 0 samples (0s)
+  Peak Load At      : 60s
+=================================================
+```
 
-### Solutions (shown in OptimizedNetwork config):
-1. Add 3 more APs in CS Block (5 → 8)
-2. Upgrade AP firmware to support 80 clients (was 50)
-3. Double registration server capacity (200 → 400 sessions)
-4. Stagger registration by department (not simulated but recommended)
+**What this tells us:**
+- **Admin & CS** experienced ~30-50 sampling intervals of congestion (each ~1s, so ~30-50s total bottleneck duration)
+- **Library** stayed uncongested (0 samples)
+- **Peak arrived at t=60s** and lasted ~50 seconds before recovery
+- Students show 1-2 retry attempts due to timeouts during peak
+
+### OptimizedNetwork Scenario:
+
+**Expected Monitor Output:**
+```
+=================================================
+  NET-OPT ADVANCED SIMULATION COMPLETE
+  Total Samples     : 300
+  Bottleneck Events : 0
+  Admin Bottlenecks : 0 samples (0s)
+  CS Bottlenecks    : 0 samples (0s)
+  Lib Bottlenecks   : 0 samples (0s)
+=================================================
+```
+
+**What this demonstrates:**
+- Upgrading AP capacity (80 maxClients vs 5 maxClients in Peak) completely **eliminates bottlenecks**
+- All students register on **first attempt** (no retries needed)
+- Network health stays > 70% throughout
+
+### StressTest Scenario (Worst Case):
+
+**Expected Monitor Output:**
+```
+=================================================
+  NET-OPT ADVANCED SIMULATION COMPLETE
+  Total Samples     : 300
+  Bottleneck Events : 1
+  Admin Bottlenecks : 136 samples (140s)
+  CS Bottlenecks    : 116 samples (120s)
+  Lib Bottlenecks   : 146 samples (150s)
+  Peak Load At      : 50s
+=================================================
+```
+
+**What this demonstrates:**
+- **Severe, sustained congestion** across all buildings (120-150s duration)
+- Students require **3-4 retry attempts** to finally succeed
+- This shows why staggered registration is critical for real deployments
 
 ---
 

@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for NET-OPT
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep
+#  opp_makemake -f --deep -o NET-OPT
 #
 
 # Name of target to be created (-o option)
