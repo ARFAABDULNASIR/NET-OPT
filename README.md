@@ -287,4 +287,27 @@ A: We implement exponential backoff: 2s, 4s, 8s, 16s, 32s between retries —
 
 ---
 
+## Web companion (`net-opt-web/`)
+
+Discrete-time **browser simulator** kept in lockstep with **`simulations/omnetpp.ini`**: same **`sim-time-limit`** per config (Registration **600s**, most others **300s**, NormalDay **180s**), five scenario names, **`useTimeProfile` / `stressProfile`**, **`maxRetries`** (**50** only on Registration Peak; otherwise OmNeT **`5 + (3 − priority)`**), monitor **1s** sampling **·** debounce **`ceil(5/Δt)`** like `BottleneckMonitor`, and **`StudentDevice` / `Infrastructure.cc`** health formulas. Runs the **full OMNeT horizon** (simulation **does not** stop when every student completes). Discrete-event fidelity matches at the scenario/metric layer; the TS kernel differs from OMNeT C++ internally.
+
+### Run locally
+
+```bash
+cd net-opt-web/
+npm install
+npm run dev
+```
+
+### Production build / deploy
+
+```bash
+cd net-opt-web/
+npm run build
+```
+
+Static files emit to **`net-opt-web/dist/`**. Host on GitHub Pages, Netlify, or Vercel with **publish directory** = `dist` (or `net-opt-web/dist` when using a mono-repo aware host). `vite.config.ts` uses `base: './'` so file-based open and sub-path hosting work.
+
+---
+
 *NET-OPT | Parallel & Distributed Computing | Spring 2026 | Section B*
