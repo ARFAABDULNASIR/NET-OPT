@@ -1,5 +1,4 @@
 # NET-OPT — Campus Wi-Fi Bottleneck Simulation
-## PDC Spring 2026 | Section B | Serial #37, 38, 39
 ### Tool: OMNeT++ | Domain: Campus IT
 
 ---
@@ -96,7 +95,7 @@ cd NET-OPT/
 
 ---
 
-## 🎬 Four Simulation Scenarios (Show ALL to Professor)
+## 🎬 Four Simulation Scenarios
 
 | Config Name       | Description                         | Expected Result          |
 |-------------------|-------------------------------------|--------------------------|
@@ -138,27 +137,6 @@ At simulation end, the **BottleneckMonitor** module prints a detailed report:
 - **Total Samples**: Monitoring intervals (1 per second)
 - **Bottleneck Events**: Transition count (health dropped below 50%)
 - **XXX Bottlenecks**: Number of samples where building was congested + total duration
-
-### Key Statistics to show Professor:
-
-After simulation finishes, click **Results** tab or run:
-```bash
-cd results/
-# Open .sca (scalar) and .vec (vector) files in the IDE's Analysis tool
-```
-
-**What to record and show:**
-- `apLoad` → Wi-Fi load per AP over time (should spike at t=60-90s)
-- `clientCount` → How many students per AP
-- `adminBottleneckSamples`, `csBottleneckSamples`, `libBottleneckSamples` → congestion sample count per building
-- `networkHealth` → Global metric (drops from 95% to 25% at peak)
-- `activeSessions` → Server sessions
-- `responseTime` → Registration response time in ms
-- `totalAttempts` → Per-student retry count (should be 1-2 in RegistrationPeak, 3-4 in StressTest)
-
----
-
-## 🔍 Key Results to Explain to Professor
 
 ### RegistrationPeak Scenario (Main Demo):
 
@@ -229,64 +207,6 @@ t=120-300s → Post-peak, network stabilizes (80%)
 - Students require **3-4 retry attempts** to finally succeed
 - This shows why staggered registration is critical for real deployments
 
----
-
-## 📋 Assessment Checklist (Per Your Rubric)
-
-| Criteria             | What We Demonstrate                            | Score Target |
-|----------------------|------------------------------------------------|--------------|
-| Core Logic (CLO 3)   | Bottleneck detection, queue modeling, retries  | Excellent    |
-| Tool Integration(CLO4)| Full OMNeT++ with NED, signals, statistics     | Excellent    |
-| Fault Tolerance(CLO5)| AP drops → student retries with backoff        | Excellent    |
-| Demo & Q&A           | 4 scenarios, live graphs, final report         | Excellent    |
-
----
-
-## ❓ Expected Professor Questions & Answers
-
-**Q: Why OMNeT++?**
-A: OMNeT++ is the industry-standard discrete-event network simulator. It allows
-   us to model real network topologies, test thousands of nodes, and generate
-   real statistics — impossible to do with real hardware at this scale.
-
-**Q: What is a bottleneck in this context?**
-A: An AP is a bottleneck when its client count exceeds 90% of capacity OR when
-   its load exceeds 80% of bandwidth. Our monitor detects and flags this in
-   real-time using OMNeT++ signals.
-
-**Q: How is this related to Parallel & Distributed Computing?**
-A: The network itself IS a distributed system. APs independently manage clients,
-   packets are processed in parallel, and the registration server is a shared
-   distributed resource — exactly the concepts from PDC.
-
-**Q: How does the student retry mechanism work?**
-A: We implement exponential backoff: 2s, 4s, 8s, 16s, 32s between retries —
-   same algorithm used in real Wi-Fi (802.11 CSMA/CA backoff).
-
----
-
-## 👥 Team Roles (Serial #37, 38, 39)
-
-| Serial | Suggested Role              | Main Files                    |
-|--------|-----------------------------|-------------------------------|
-| 37     | Network Topology + AP Logic | NetOpt.ned, AccessPoint.cc    |
-| 38     | Student Behavior + Server   | StudentDevice.cc, RegServer.cc|
-| 39     | Simulation Config + Demo    | omnetpp.ini, Results Analysis |
-
----
-
-## 📞 Quick Troubleshooting
-
-| Problem                         | Solution                                      |
-|---------------------------------|-----------------------------------------------|
-| "Module not found" error        | Right-click project → Properties → NED paths  |
-| Build fails (missing omnetpp.h) | Ensure OMNeT++ is properly installed          |
-| Simulation runs but no graphics | Use `-u Qtenv` flag, not `-u Cmdenv`          |
-| No results files generated      | Check `result-dir = results/` in omnetpp.ini  |
-| APs show no bottleneck          | Switch to `RegistrationPeak` or `StressTest`  |
-
----
-
 ## Web companion (`net-opt-web/`)
 
 Discrete-time **browser simulator** kept in lockstep with **`simulations/omnetpp.ini`**: same **`sim-time-limit`** per config (Registration **600s**, most others **300s**, NormalDay **180s**), five scenario names, **`useTimeProfile` / `stressProfile`**, **`maxRetries`** (**50** only on Registration Peak; otherwise OmNeT **`5 + (3 − priority)`**), monitor **1s** sampling **·** debounce **`ceil(5/Δt)`** like `BottleneckMonitor`, and **`StudentDevice` / `Infrastructure.cc`** health formulas. Runs the **full OMNeT horizon** (simulation **does not** stop when every student completes). Discrete-event fidelity matches at the scenario/metric layer; the TS kernel differs from OMNeT C++ internally.
@@ -309,5 +229,3 @@ npm run build
 Static files emit to **`net-opt-web/dist/`**. Host on GitHub Pages, Netlify, or Vercel with **publish directory** = `dist` (or `net-opt-web/dist` when using a mono-repo aware host). `vite.config.ts` uses `base: './'` so file-based open and sub-path hosting work.
 
 ---
-
-*NET-OPT | Parallel & Distributed Computing | Spring 2026 | Section B*
